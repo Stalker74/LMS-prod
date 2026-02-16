@@ -90,7 +90,8 @@ jobs:
   terraform-apply:
     name: Apply
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+    needs: terraform-plan
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     strategy:
       matrix:
         environment: [dev, prod]

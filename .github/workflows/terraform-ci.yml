@@ -81,7 +81,7 @@ jobs:
         working-directory: ./terraform/environments/${{ matrix.environment }}
 
       - name: Terraform Plan
-        run: terraform plan -no-color -input=false
+        run: terraform plan -no-color -input=false -lock-timeout=5m
         working-directory: ./terraform/environments/${{ matrix.environment }}
 
   terraform-apply:
@@ -114,7 +114,7 @@ jobs:
         working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -auto-approve -input=false -lock-timeout=10m
         working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
 
       - name: Summary
@@ -152,7 +152,7 @@ jobs:
         working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
 
       - name: Terraform Destroy
-        run: terraform destroy -auto-approve -input=false
+        run: terraform destroy -auto-approve -input=false -lock-timeout=10m
         working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
 
       - name: Summary

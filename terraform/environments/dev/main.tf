@@ -83,20 +83,20 @@ module "iam" {
   s3_bucket_arn = module.s3.bucket_arn
 }
 
-# RDS (DocumentDB) Module
-module "rds" {
-  source = "../../modules/rds"
-
-  environment             = var.environment
-  private_subnet_ids      = module.vpc.private_subnet_ids
-  security_group_id       = module.security_groups.rds_security_group_id
-  db_username             = var.db_username
-  db_password             = var.db_password
-  instance_class          = var.db_instance_class
-  instance_count          = var.db_instance_count
-  backup_retention_period = var.db_backup_retention_period
-  skip_final_snapshot     = var.db_skip_final_snapshot
-}
+# RDS (DocumentDB) Module - Temporarily disabled
+# module "rds" {
+#   source = "../../modules/rds"
+# 
+#   environment             = var.environment
+#   private_subnet_ids      = module.vpc.private_subnet_ids
+#   security_group_id       = module.security_groups.rds_security_group_id
+#   db_username             = var.db_username
+#   db_password             = var.db_password
+#   instance_class          = var.db_instance_class
+#   instance_count          = var.db_instance_count
+#   backup_retention_period = var.db_backup_retention_period
+#   skip_final_snapshot     = var.db_skip_final_snapshot
+# }
 
 # ElastiCache (Redis) Module
 module "elasticache" {
@@ -111,19 +111,19 @@ module "elasticache" {
   cloudwatch_log_group     = module.cloudwatch.application_log_group_name
 }
 
-# ALB Module
-module "alb" {
-  source = "../../modules/alb"
-
-  environment                = var.environment
-  vpc_id                     = module.vpc.vpc_id
-  public_subnet_ids          = module.vpc.public_subnet_ids
-  alb_security_group_id      = module.security_groups.alb_security_group_id
-  access_logs_bucket         = module.s3.bucket_name
-  enable_access_logs         = var.enable_alb_access_logs
-  enable_deletion_protection = var.enable_alb_deletion_protection
-  certificate_arn            = var.certificate_arn
-}
+# ALB Module - Temporarily disabled
+# module "alb" {
+#   source = "../../modules/alb"
+# 
+#   environment                = var.environment
+#   vpc_id                     = module.vpc.vpc_id
+#   public_subnet_ids          = module.vpc.public_subnet_ids
+#   alb_security_group_id      = module.security_groups.alb_security_group_id
+#   access_logs_bucket         = module.s3.bucket_name
+#   enable_access_logs         = var.enable_alb_access_logs
+#   enable_deletion_protection = var.enable_alb_deletion_protection
+#   certificate_arn            = var.certificate_arn
+# }
 
 # EC2 Module
 module "ec2" {
@@ -135,12 +135,14 @@ module "ec2" {
   subnet_ids            = module.vpc.public_subnet_ids
   ec2_security_group_id = module.security_groups.ec2_security_group_id
   iam_instance_profile  = module.iam.instance_profile_name
-  target_group_arns     = [
-    module.alb.backend_target_group_arn,
-    module.alb.frontend_target_group_arn
-  ]
+  target_group_arns     = []
+  # target_group_arns     = [
+  #   module.alb.backend_target_group_arn,
+  #   module.alb.frontend_target_group_arn
+  # ]
   s3_bucket_name        = module.s3.bucket_name
-  mongodb_uri           = "mongodb://${var.db_username}:${var.db_password}@${module.rds.cluster_endpoint}:27017/lms?tls=false"
+  mongodb_uri           = "mongodb://localhost:27017/lms"
+  # mongodb_uri           = "mongodb://${var.db_username}:${var.db_password}@${module.rds.cluster_endpoint}:27017/lms?tls=false"
   redis_host            = module.elasticache.primary_endpoint_address
   aws_region            = var.aws_region
   backend_log_group     = module.cloudwatch.backend_log_group_name

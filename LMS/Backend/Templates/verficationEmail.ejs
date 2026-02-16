@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title><%= subject || "Verify your email" %></title>
+
+  <style>
+    .preheader { display:none !important; visibility:hidden; opacity:0; color:transparent; height:0; width:0; }
+    /* Basic mobile responsiveness */
+    @media only screen and (max-width:600px) {
+      .container { width: 100% !important; padding: 20px !important; }
+      .hero { padding: 28px 18px !important; }
+      .stack { display:block !important; width:100% !important; }
+      /* This makes the button full width on mobile */
+      .btn { width:100% !important; box-sizing: border-box; display: block !important; text-align: center; } 
+    }
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#0b2140; font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;">
+
+  <div class="preheader">Verify your email to activate your account.</div>
+
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#0b2140; min-width:100%; padding:48px 0;">
+    <tr>
+      <td align="center">
+
+        <table role="presentation" class="container" cellpadding="0" cellspacing="0" width="600" style="background:transparent; width:600px; margin:0 auto;">
+          <tr>
+            <td style="padding:0 20px;">
+
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:20px;">
+                <tr>
+                  <td style="padding:18px 0; text-align:left;">
+                    <% if (logoUrl) { %>
+                      <img src="<%= logoUrl %>" alt="<%= companyName %> logo" width="140" style="display:inline-block; vertical-align:middle; border:0; outline:none; text-decoration:none;">
+                    <% } else { %>
+                      <div style="display:inline-block; font-weight:700; color:#ffffff; font-size:20px;"><%= companyName || 'Your Company' %></div>
+                    <% } %>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td class="hero" style="padding:40px;">
+
+                    <h1 style="margin:0 0 12px 0; font-size:22px; color:#0b2140; font-weight:700; line-height:1.2;">
+                      Hi <%= userName || 'there' %>,
+                    </h1>
+
+                    <p style="margin:0 0 18px 0; color:#394b60; font-size:15px; line-height:1.5;">
+                      Thanks for creating an account with <strong><%= companyName || 'Our App' %></strong>. To complete your registration and secure your account, please verify your email address by using the code below.
+                    </p>
+
+                    <% if (code) { %>
+                      <div style="margin:20px 0 10px 0; text-align:center;">
+                        <div style="display:inline-block; padding:14px 20px; border-radius:8px; background:#f5f8fb; border:1px solid #e6eef8;">
+                          <div style="font-family: 'Courier New', monospace; font-size:20px; letter-spacing:2px; color:#0b2140;"><strong><%= code %></strong></div>
+                        </div>
+                      </div>
+                      <p style="margin:0 0 24px 0; text-align: center; color:#394b60; font-size:13px;">This verification code will expire in <strong>5 minutes</strong>.</p>
+                    <% } %>
+
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+                      <tr>
+                        <td align="center">
+                          <a href="<%= websiteUrl || '#' %>" class="btn" target="_blank" style="display:inline-block; padding:12px 32px; font-family:'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:16px; font-weight:600; line-height:1.5; text-decoration:none; color:#ffffff; background-color:#0b2140; border-radius:6px; border:1px solid #0b2140; mso-padding-alt:0;">
+                            Back to Website &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                    <hr style="border:none; border-top:1px solid #eef3f8; margin:22px 0;">
+                    <p style="margin:0 0 8px 0; color:#394b60; font-size:13px;">
+                      If you did not create an account with <strong><%= companyName || 'Our App' %></strong>, you can safely ignore this email — no changes will be made to your account.
+                    </p>
+
+                    <p style="margin:8px 0 0 0; color:#394b60; font-size:13px;">
+                      Need help? Contact our support team at
+                      <a href="mailto:<%= supportEmail %>" style="color:#0b2a55; text-decoration:underline;"><%= supportEmail || 'support@example.com' %></a>.
+                    </p>
+
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f7fbff; padding:16px 40px; text-align:center;">
+                    <small style="color:#6b8199; font-size:12px;">
+                      This verification link will expire in <strong>5 minutes</strong>.
+                    </small>
+                  </td>
+                </tr>
+              </table>
+
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:18px;">
+                <tr>
+                  <td style="padding:18px 20px; text-align:center; color:#cfe6ff; font-size:13px;">
+                    <div style="max-width:520px; margin:0 auto;">
+                      <div style="margin-bottom:8px;">
+                        <strong style="color:#ffffff;"><%= companyName || 'Your Company' %></strong>
+                      </div>
+                      <div style="color:#cfe6ff; opacity:0.9;">
+                        <span><%= companyAddress || '123 Business Ave, City, Country' %></span>
+                        <% if (companyPhone) { %> · <span><%= companyPhone %></span><% } %>
+                      </div>
+
+                      <div style="margin-top:12px; font-size:12px; color:#cfe6ff;">
+                        <a href="#" style="color:#a8d1ff; text-decoration:underline; margin-right:12px;">Unsubscribe</a>
+                        <a href="#" style="color:#a8d1ff; text-decoration:underline;">Privacy Policy</a>
+                      </div>
+
+                      <div style="margin-top:12px; color:#9fc7ff; font-size:12px;">
+                        © <%= new Date().getFullYear() %> <%= companyName || 'Your Company' %>. All rights reserved.
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

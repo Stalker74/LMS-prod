@@ -1,0 +1,159 @@
+{
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/lms-backend.log",
+            "log_group_name": "/aws/ec2/ENV/lms/backend",
+            "log_stream_name": "{instance_id}/backend",
+            "timezone": "UTC",
+            "timestamp_format": "%Y-%m-%d %H:%M:%S"
+          },
+          {
+            "file_path": "/var/log/lms-backend-error.log",
+            "log_group_name": "/aws/ec2/ENV/lms/backend",
+            "log_stream_name": "{instance_id}/backend-error",
+            "timezone": "UTC",
+            "timestamp_format": "%Y-%m-%d %H:%M:%S"
+          },
+          {
+            "file_path": "/var/log/lms-frontend.log",
+            "log_group_name": "/aws/ec2/ENV/lms/frontend",
+            "log_stream_name": "{instance_id}/frontend",
+            "timezone": "UTC",
+            "timestamp_format": "%Y-%m-%d %H:%M:%S"
+          },
+          {
+            "file_path": "/var/log/lms-frontend-error.log",
+            "log_group_name": "/aws/ec2/ENV/lms/frontend",
+            "log_stream_name": "{instance_id}/frontend-error",
+            "timezone": "UTC",
+            "timestamp_format": "%Y-%m-%d %H:%M:%S"
+          },
+          {
+            "file_path": "/var/log/messages",
+            "log_group_name": "/aws/ec2/ENV/lms/system",
+            "log_stream_name": "{instance_id}/messages",
+            "timezone": "UTC"
+          },
+          {
+            "file_path": "/var/log/secure",
+            "log_group_name": "/aws/ec2/ENV/lms/system",
+            "log_stream_name": "{instance_id}/secure",
+            "timezone": "UTC"
+          }
+        ]
+      }
+    }
+  },
+  "metrics": {
+    "namespace": "LMS/EC2",
+    "metrics_collected": {
+      "cpu": {
+        "measurement": [
+          {
+            "name": "cpu_usage_idle",
+            "rename": "CPU_IDLE",
+            "unit": "Percent"
+          },
+          {
+            "name": "cpu_usage_iowait",
+            "rename": "CPU_IOWAIT",
+            "unit": "Percent"
+          },
+          {
+            "name": "cpu_usage_system",
+            "rename": "CPU_SYSTEM",
+            "unit": "Percent"
+          },
+          {
+            "name": "cpu_usage_user",
+            "rename": "CPU_USER",
+            "unit": "Percent"
+          }
+        ],
+        "metrics_collection_interval": 60,
+        "totalcpu": true
+      },
+      "disk": {
+        "measurement": [
+          {
+            "name": "used_percent",
+            "rename": "DISK_USED_PERCENT",
+            "unit": "Percent"
+          },
+          {
+            "name": "free",
+            "rename": "DISK_FREE",
+            "unit": "Gigabytes"
+          },
+          {
+            "name": "used",
+            "rename": "DISK_USED",
+            "unit": "Gigabytes"
+          }
+        ],
+        "metrics_collection_interval": 60,
+        "resources": [
+          "/"
+        ]
+      },
+      "diskio": {
+        "measurement": [
+          {
+            "name": "io_time",
+            "unit": "Milliseconds"
+          },
+          {
+            "name": "read_bytes",
+            "unit": "Bytes"
+          },
+          {
+            "name": "write_bytes",
+            "unit": "Bytes"
+          }
+        ],
+        "metrics_collection_interval": 60
+      },
+      "mem": {
+        "measurement": [
+          {
+            "name": "mem_used_percent",
+            "rename": "MEM_USED_PERCENT",
+            "unit": "Percent"
+          },
+          {
+            "name": "mem_available",
+            "rename": "MEM_AVAILABLE",
+            "unit": "Megabytes"
+          },
+          {
+            "name": "mem_used",
+            "rename": "MEM_USED",
+            "unit": "Megabytes"
+          }
+        ],
+        "metrics_collection_interval": 60
+      },
+      "netstat": {
+        "measurement": [
+          {
+            "name": "tcp_established",
+            "rename": "TCP_ESTABLISHED"
+          },
+          {
+            "name": "tcp_time_wait",
+            "rename": "TCP_TIME_WAIT"
+          }
+        ],
+        "metrics_collection_interval": 60
+      }
+    },
+    "append_dimensions": {
+      "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+      "InstanceId": "${aws:InstanceId}",
+      "InstanceType": "${aws:InstanceType}"
+    }
+  }
+}

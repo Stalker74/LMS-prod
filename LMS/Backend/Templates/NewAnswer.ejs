@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Answer Notification</title>
+  <style>
+    /* Reset default styles */
+    body, html, table, td, a {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      line-height: 1.5;
+    }
+
+    body {
+      background-color: #f4f4f4;
+      color: #333333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      background-color: #1a3d7c; /* Dark Blue */
+      color: #ffffff;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .content {
+      padding: 30px 20px;
+      color: #333333;
+      font-size: 16px;
+    }
+
+    .content p {
+      margin-bottom: 16px;
+    }
+
+    .highlight {
+      background-color: #e8f0fe;
+      padding: 10px 15px;
+      border-left: 4px solid #1a3d7c;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 25px;
+      background-color: #1a3d7c;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .footer {
+      background-color: #f4f4f4;
+      color: #777777;
+      text-align: center;
+      font-size: 14px;
+      padding: 15px 20px;
+    }
+
+    @media screen and (max-width: 600px) {
+      .container {
+        width: 95% !important;
+      }
+      .content {
+        padding: 20px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <%= courseContent %>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <p>Hi <strong><%= userName %></strong>,</p>
+
+      <p><strong><%= replier %></strong> has just added a new answer to your question on our platform.</p>
+
+      <div class="highlight">
+        <p><strong>Your Question:</strong></p>
+        <p><%= questionText %></p>
+      </div>
+
+      <div class="highlight" style="border-left-color: #ff7f50;">
+        <p><strong>New Answer:</strong></p>
+        <p><%= answerText %></p>
+      </div>
+
+      <p>You can view the full discussion and reply if needed.</p>
+
+      <a href="<%= questionUrl %>" class="button">View Question</a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      &copy; <%= new Date().getFullYear() %> Your Platform Name. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

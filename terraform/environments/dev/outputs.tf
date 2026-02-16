@@ -14,16 +14,16 @@ output "private_subnet_ids" {
   value       = module.vpc.private_subnet_ids
 }
 
-# ALB Outputs
-output "alb_dns_name" {
-  description = "DNS name of the Application Load Balancer"
-  value       = module.alb.alb_dns_name
-}
+# ALB Outputs - Temporarily disabled
+# output "alb_dns_name" {
+#   description = "DNS name of the Application Load Balancer"
+#   value       = module.alb.alb_dns_name
+# }
 
-output "application_url" {
-  description = "URL to access the application"
-  value       = "http://${module.alb.alb_dns_name}"
-}
+# output "application_url" {
+#   description = "URL to access the application"
+#   value       = "http://${module.alb.alb_dns_name}"
+# }
 
 # S3 Outputs
 output "s3_bucket_name" {
@@ -31,12 +31,12 @@ output "s3_bucket_name" {
   value       = module.s3.bucket_name
 }
 
-# Database Outputs
-output "database_endpoint" {
-  description = "DocumentDB cluster endpoint"
-  value       = module.rds.cluster_endpoint
-  sensitive   = true
-}
+# Database Outputs - Temporarily disabled
+# output "database_endpoint" {
+#   description = "DocumentDB cluster endpoint"
+#   value       = module.rds.cluster_endpoint
+#   sensitive   = true
+# }
 
 # Redis Outputs
 output "redis_endpoint" {
@@ -61,9 +61,6 @@ output "log_groups" {
 output "connection_info" {
   description = "Information for connecting to the infrastructure"
   value = {
-    application_url    = "http://${module.alb.alb_dns_name}"
-    backend_api_url    = "http://${module.alb.alb_dns_name}/api"
-    database_endpoint  = module.rds.cluster_endpoint
     redis_endpoint     = module.elasticache.primary_endpoint_address
     s3_bucket          = module.s3.bucket_name
   }

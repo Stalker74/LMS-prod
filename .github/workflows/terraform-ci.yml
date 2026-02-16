@@ -61,6 +61,16 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    
+    env:
+      TF_VAR_vpc_cidr: ${{ vars.TF_VAR_VPC_CIDR }}
+      TF_VAR_availability_zones: ${{ vars.TF_VAR_AVAILABILITY_ZONES }}
+      TF_VAR_public_subnet_cidrs: ${{ vars.TF_VAR_PUBLIC_SUBNET_CIDRS }}
+      TF_VAR_private_subnet_cidrs: ${{ vars.TF_VAR_PRIVATE_SUBNET_CIDRS }}
+      TF_VAR_bucket_suffix: ${{ vars.TF_VAR_BUCKET_SUFFIX }}
+      TF_VAR_key_name: ${{ vars.TF_VAR_KEY_NAME }}
+      TF_VAR_db_username: ${{ secrets.TF_VAR_DB_USERNAME }}
+      TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4
@@ -94,6 +104,16 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    
+    env:
+      TF_VAR_vpc_cidr: ${{ vars.TF_VAR_VPC_CIDR }}
+      TF_VAR_availability_zones: ${{ vars.TF_VAR_AVAILABILITY_ZONES }}
+      TF_VAR_public_subnet_cidrs: ${{ vars.TF_VAR_PUBLIC_SUBNET_CIDRS }}
+      TF_VAR_private_subnet_cidrs: ${{ vars.TF_VAR_PRIVATE_SUBNET_CIDRS }}
+      TF_VAR_bucket_suffix: ${{ vars.TF_VAR_BUCKET_SUFFIX }}
+      TF_VAR_key_name: ${{ vars.TF_VAR_KEY_NAME }}
+      TF_VAR_db_username: ${{ secrets.TF_VAR_DB_USERNAME }}
+      TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4
@@ -132,6 +152,16 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    
+    env:
+      TF_VAR_vpc_cidr: ${{ vars.TF_VAR_VPC_CIDR }}
+      TF_VAR_availability_zones: ${{ vars.TF_VAR_AVAILABILITY_ZONES }}
+      TF_VAR_public_subnet_cidrs: ${{ vars.TF_VAR_PUBLIC_SUBNET_CIDRS }}
+      TF_VAR_private_subnet_cidrs: ${{ vars.TF_VAR_PRIVATE_SUBNET_CIDRS }}
+      TF_VAR_bucket_suffix: ${{ vars.TF_VAR_BUCKET_SUFFIX }}
+      TF_VAR_key_name: ${{ vars.TF_VAR_KEY_NAME }}
+      TF_VAR_db_username: ${{ secrets.TF_VAR_DB_USERNAME }}
+      TF_VAR_db_password: ${{ secrets.TF_VAR_DB_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4

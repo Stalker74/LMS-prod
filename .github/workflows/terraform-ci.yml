@@ -16,13 +16,6 @@ on:
         options:
           - apply
           - destroy
-      environment:
-        description: 'Environment'
-        required: true
-        type: choice
-        options:
-          - dev
-          - prod
 
 env:
   TF_VERSION: '1.5.0'
@@ -95,11 +88,15 @@ jobs:
         working-directory: ./terraform/environments/${{ matrix.environment }}
 
   terraform-apply:
-    name: Apply (${{ github.event.inputs.environment }})
+    name: Apply
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
+    strategy:
+      matrix:
+        environment: [dev, prod]
+      fail-fast: false
     environment:
-      name: ${{ github.event.inputs.environment }}
+      name: ${{ matrix.environment }}
     
     permissions:
       contents: read
@@ -131,23 +128,27 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
+        working-directory: ./terraform/environments/${{ matrix.environment }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -input=false -lock-timeout=10m
-        working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
+        working-directory: ./terraform/environments/${{ matrix.environment }}
 
       - name: Summary
         run: |
           echo "### Deployment Successful! 🚀" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
 
   terraform-destroy:
-    name: Destroy (${{ github.event.inputs.environment }})
+    name: Destroy
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
+    strategy:
+      matrix:
+        environment: [dev, prod]
+      fail-fast: false
     environment:
-      name: ${{ github.event.inputs.environment }}-destroy
+      name: ${{ matrix.environment }}-destroy
     
     permissions:
       contents: read
@@ -179,13 +180,13 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
+        working-directory: ./terraform/environments/${{ matrix.environment }}
 
       - name: Terraform Destroy
         run: terraform destroy -auto-approve -input=false -lock-timeout=10m
-        working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
+        working-directory: ./terraform/environments/${{ matrix.environment }}
 
       - name: Summary
         run: |
           echo "### Infrastructure Destroyed! 💥" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY

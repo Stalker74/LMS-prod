@@ -11,7 +11,7 @@ override.tf.json
 *_override.tf.json
 
 # Sensitive files
-*.tfvars
+# *.tfvars  # Commented out to allow terraform.tfvars in repo
 
 # Node modules
 node_modules/

@@ -160,7 +160,7 @@ jobs:
         working-directory: ./terraform/environments/dev
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -auto-approve -input=false -var-file=terraform.tfvars
         working-directory: ./terraform/environments/dev
 
       - name: Get Outputs
@@ -210,7 +210,7 @@ jobs:
         working-directory: ./terraform/environments/prod
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -auto-approve -input=false -var-file=terraform.tfvars
         working-directory: ./terraform/environments/prod
 
       - name: Get Outputs

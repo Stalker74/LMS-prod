@@ -7,6 +7,10 @@ resource "aws_vpc" "main" {
     Name        = "${var.environment}-vpc"
     Environment = var.environment
   }
+
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 resource "aws_internet_gateway" "main" {

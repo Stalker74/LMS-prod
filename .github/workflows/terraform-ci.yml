@@ -233,6 +233,14 @@ jobs:
         if: github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'both'
         run: |
           terraform init
+          echo "Destroying resources in proper order..."
+          terraform destroy -target=module.ec2 -auto-approve -input=false || true
+          terraform destroy -target=module.elasticache -auto-approve -input=false || true
+          terraform destroy -target=module.cloudwatch -auto-approve -input=false || true
+          terraform destroy -target=module.s3 -auto-approve -input=false || true
+          terraform destroy -target=module.iam -auto-approve -input=false || true
+          terraform destroy -target=module.security_groups -auto-approve -input=false || true
+          terraform destroy -target=module.vpc -auto-approve -input=false || true
           terraform destroy -auto-approve -input=false
         working-directory: ./terraform/environments/dev
 
@@ -240,6 +248,14 @@ jobs:
         if: github.event.inputs.environment == 'prod' || github.event.inputs.environment == 'both'
         run: |
           terraform init
+          echo "Destroying resources in proper order..."
+          terraform destroy -target=module.ec2 -auto-approve -input=false || true
+          terraform destroy -target=module.elasticache -auto-approve -input=false || true
+          terraform destroy -target=module.cloudwatch -auto-approve -input=false || true
+          terraform destroy -target=module.s3 -auto-approve -input=false || true
+          terraform destroy -target=module.iam -auto-approve -input=false || true
+          terraform destroy -target=module.security_groups -auto-approve -input=false || true
+          terraform destroy -target=module.vpc -auto-approve -input=false || true
           terraform destroy -auto-approve -input=false
         working-directory: ./terraform/environments/prod
 

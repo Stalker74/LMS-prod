@@ -59,6 +59,7 @@ jobs:
       matrix:
         environment: [dev, prod]
       fail-fast: false
+      max-parallel: 1
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
@@ -73,7 +74,7 @@ jobs:
       - name: Plan ${{ matrix.environment }}
         run: |
           terraform init
-          terraform plan -no-color -lock-timeout=5m
+          terraform plan -no-color -lock-timeout=10m
         working-directory: ./terraform/environments/${{ matrix.environment }}
 
   apply-dev:

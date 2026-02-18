@@ -71,6 +71,14 @@ jobs:
         with:
           terraform_version: ${{ env.TF_VERSION }}
       
+      - name: Release stale lock
+        run: |
+          aws dynamodb delete-item \
+            --table-name lms-terraform-state-locks \
+            --key '{"LockID": {"S": "lms-terraform-state-bucket/env/${{ matrix.environment }}/terraform.tfstate-md5"}}' \
+            --region ${{ env.AWS_REGION }} 2>/dev/null || true
+        continue-on-error: true
+      
       - name: Plan ${{ matrix.environment }}
         run: |
           terraform init

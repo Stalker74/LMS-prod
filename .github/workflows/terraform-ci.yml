@@ -1,4 +1,4 @@
-name: Terraform CI/CD Pipeline
+name: Terraform CI/CD
 
 on:
   pull_request:
@@ -8,20 +8,19 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Action to perform'
+        description: 'Action'
         required: true
         type: choice
         options:
           - apply
           - destroy
       environment:
-        description: 'Environment to apply/destroy'
+        description: 'Environment'
         required: true
         type: choice
         options:
           - dev
           - prod
-          - both
 
 concurrency:
   group: terraform-${{ github.event.inputs.environment || 'all' }}
@@ -32,253 +31,85 @@ env:
   AWS_REGION: 'us-east-1'
 
 jobs:
-  # Stage 1: Validate
   validate:
-    name: 'Stage 1: Validate'
+    name: Validate
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        environment: [dev, prod]
-    
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Terraform Format Check
-        id: fmt
-        run: terraform fmt -check -recursive
-        working-directory: ./terraform/environments/${{ matrix.environment }}
-        continue-on-error: true
-
-      - name: Terraform Init (Backend Disabled)
-        id: init
-        run: terraform init -backend=false
-        working-directory: ./terraform/environments/${{ matrix.environment }}
-
-      - name: Terraform Validate
-        id: validate
-        run: terraform validate -no-color
-        working-directory: ./terraform/environments/${{ matrix.environment }}
-
-      - name: Validation Summary
+      
+      - name: Validate Dev
         run: |
-          echo "### ✅ Validation Passed - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Format Check: ${{ steps.fmt.outcome }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Init: ${{ steps.init.outcome }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Validate: ${{ steps.validate.outcome }}" >> $GITHUB_STEP_SUMMARY
+          terraform init -backend=false
+          terraform validate
+        working-directory: ./terraform/environments/dev
 
-  # Stage 2: Plan
   plan:
-    name: 'Stage 2: Plan'
+    name: Plan
     runs-on: ubuntu-latest
     needs: validate
-    strategy:
-      matrix:
-        environment: [dev, prod]
-    
-    permissions:
-      contents: read
-      pull-requests: write
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform/environments/${{ matrix.environment }}
-
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -no-color -input=false
-        working-directory: ./terraform/environments/${{ matrix.environment }}
-        continue-on-error: true
-
-      - name: Plan Summary
+      
+      - name: Plan Dev
         run: |
-          echo "### 📋 Plan Completed - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Status:** ${{ steps.plan.outcome }}" >> $GITHUB_STEP_SUMMARY
+          terraform init
+          terraform plan -no-color
+        working-directory: ./terraform/environments/dev
 
-  # Stage 3: Apply Dev
-  apply-dev:
-    name: 'Stage 3: Apply (Dev)'
+  apply:
+    name: Apply
     runs-on: ubuntu-latest
     needs: plan
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply' && (github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'both')
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply'
     environment:
-      name: dev
-    
-    permissions:
-      contents: read
-
+      name: ${{ github.event.inputs.environment }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform/environments/dev
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
-        working-directory: ./terraform/environments/dev
-
-      - name: Apply Summary
+      
+      - name: Apply
         run: |
-          echo "### ✅ Dev Deployment Successful!" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** dev" >> $GITHUB_STEP_SUMMARY
-          echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+          terraform init
+          terraform apply -auto-approve
+        working-directory: ./terraform/environments/${{ github.event.inputs.environment }}
 
-  # Stage 4: Apply Prod
-  apply-prod:
-    name: 'Stage 4: Apply (Prod)'
-    runs-on: ubuntu-latest
-    needs: [plan, apply-dev]
-    if: |
-      always() &&
-      needs.plan.result == 'success' &&
-      (needs.apply-dev.result == 'success' || needs.apply-dev.result == 'skipped') &&
-      github.event_name == 'workflow_dispatch' && 
-      github.event.inputs.action == 'apply' && 
-      (github.event.inputs.environment == 'prod' || github.event.inputs.environment == 'both')
-    environment:
-      name: prod
-    
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform/environments/prod
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false
-        working-directory: ./terraform/environments/prod
-
-      - name: Apply Summary
-        run: |
-          echo "### ✅ Production Deployment Successful!" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** prod" >> $GITHUB_STEP_SUMMARY
-          echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
-
-  # Stage 5: Destroy
   destroy:
-    name: 'Stage 5: Destroy'
+    name: Destroy
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy'
     environment:
       name: ${{ github.event.inputs.environment }}-destroy
-    
-    permissions:
-      contents: read
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Destroy Dev
-        if: github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'both'
+      
+      - name: Destroy
         run: |
           terraform init
-          echo "Destroying resources in proper order..."
-          terraform destroy -target=module.ec2 -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.elasticache -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.cloudwatch -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.s3 -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.iam -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.security_groups -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.vpc -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -auto-approve -input=false -lock-timeout=10m
-        working-directory: ./terraform/environments/dev
-
-      - name: Destroy Prod
-        if: github.event.inputs.environment == 'prod' || github.event.inputs.environment == 'both'
-        run: |
-          terraform init
-          echo "Destroying resources in proper order..."
-          terraform destroy -target=module.ec2 -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.elasticache -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.cloudwatch -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.s3 -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.iam -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.security_groups -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -target=module.vpc -auto-approve -input=false -lock-timeout=10m || true
-          sleep 5
-          terraform destroy -auto-approve -input=false -lock-timeout=10m
-        working-directory: ./terraform/environments/prod
-
-      - name: Destroy Summary
-        run: |
-          echo "### 💥 Infrastructure Destroyed!" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+          terraform destroy -auto-approve -lock-timeout=10m
+        working-directory: ./terraform/environments/${{ github.event.inputs.environment }}

@@ -7,22 +7,21 @@ on:
     branches: [main]
   workflow_dispatch:
     inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - apply
+          - destroy
       environment:
-        description: 'Environment to deploy/destroy'
+        description: 'Environment to apply/destroy'
         required: true
         type: choice
         options:
           - dev
           - prod
           - both
-      action:
-        description: 'Action to perform'
-        required: true
-        type: choice
-        options:
-          - plan
-          - apply
-          - destroy
 
 env:
   TF_VERSION: '1.5.0'
@@ -74,10 +73,6 @@ jobs:
     name: 'Stage 2: Plan'
     runs-on: ubuntu-latest
     needs: validate
-    if: |
-      (github.event_name == 'pull_request') ||
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.action != 'destroy')
     strategy:
       matrix:
         environment: [dev, prod]
@@ -108,31 +103,21 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: |
-          terraform plan -no-color -input=false -out=tfplan-${{ matrix.environment }}.out
+        run: terraform plan -no-color -input=false
         working-directory: ./terraform/environments/${{ matrix.environment }}
         continue-on-error: true
 
-      - name: Upload Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: tfplan-${{ matrix.environment }}
-          path: ./terraform/environments/${{ matrix.environment }}/tfplan-${{ matrix.environment }}.out
-          retention-days: 5
-
       - name: Plan Summary
         run: |
-          echo "### 📋 Plan Generated - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
-          echo "Plan file uploaded as artifact" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Plan Completed - ${{ matrix.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ steps.plan.outcome }}" >> $GITHUB_STEP_SUMMARY
 
   # Stage 3: Apply Dev
   apply-dev:
     name: 'Stage 3: Apply (Dev)'
     runs-on: ubuntu-latest
     needs: plan
-    if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply' && (github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'both'))
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply' && (github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'both')
     environment:
       name: dev
     
@@ -160,14 +145,8 @@ jobs:
         working-directory: ./terraform/environments/dev
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -input=false -var-file=terraform.tfvars
+        run: terraform apply -auto-approve -input=false
         working-directory: ./terraform/environments/dev
-
-      - name: Get Outputs
-        id: outputs
-        run: terraform output -json > outputs.json
-        working-directory: ./terraform/environments/dev
-        continue-on-error: true
 
       - name: Apply Summary
         run: |
@@ -175,55 +154,53 @@ jobs:
           echo "**Environment:** dev" >> $GITHUB_STEP_SUMMARY
           echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
 
-  # Stage 4: Apply Prod (Disabled - needs manual fix)
-  # apply-prod:
-  #   name: 'Stage 4: Apply (Prod)'
-  #   runs-on: ubuntu-latest
-  #   needs: [plan, apply-dev]
-  #   if: |
-  #     (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-  #     (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'apply' && (github.event.inputs.environment == 'prod' || github.event.inputs.environment == 'both'))
-  #   environment:
-  #     name: prod
-  #   
-  #   permissions:
-  #     contents: read
-  #
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: ${{ env.AWS_REGION }}
-  #
-  #     - name: Setup Terraform
-  #       uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: ${{ env.TF_VERSION }}
-  #
-  #     - name: Terraform Init
-  #       run: terraform init
-  #       working-directory: ./terraform/environments/prod
-  #
-  #     - name: Terraform Apply
-  #       run: terraform apply -auto-approve -input=false -var-file=terraform.tfvars
-  #       working-directory: ./terraform/environments/prod
-  #
-  #     - name: Get Outputs
-  #       id: outputs
-  #       run: terraform output -json > outputs.json
-  #       working-directory: ./terraform/environments/prod
-  #       continue-on-error: true
-  #
-  #     - name: Apply Summary
-  #       run: |
-  #         echo "### ✅ Production Deployment Successful!" >> $GITHUB_STEP_SUMMARY
-  #         echo "**Environment:** prod" >> $GITHUB_STEP_SUMMARY
-  #         echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+  # Stage 4: Apply Prod
+  apply-prod:
+    name: 'Stage 4: Apply (Prod)'
+    runs-on: ubuntu-latest
+    needs: [plan, apply-dev]
+    if: |
+      always() &&
+      needs.plan.result == 'success' &&
+      (needs.apply-dev.result == 'success' || needs.apply-dev.result == 'skipped') &&
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.action == 'apply' && 
+      (github.event.inputs.environment == 'prod' || github.event.inputs.environment == 'both')
+    environment:
+      name: prod
+    
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform/environments/prod
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false
+        working-directory: ./terraform/environments/prod
+
+      - name: Apply Summary
+        run: |
+          echo "### ✅ Production Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** prod" >> $GITHUB_STEP_SUMMARY
+          echo "**Time:** $(date)" >> $GITHUB_STEP_SUMMARY
 
   # Stage 5: Destroy
   destroy:

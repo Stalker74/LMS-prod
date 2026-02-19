@@ -132,7 +132,7 @@ jobs:
   destroy-dev:
     name: Destroy Dev
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy' && (github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'both')
+    if: false  # Disabled
     environment:
       name: dev-destroy
     steps:
@@ -155,7 +155,7 @@ jobs:
   destroy-prod:
     name: Destroy Prod
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'destroy' && (github.event.inputs.environment == 'prod' || github.event.inputs.environment == 'both')
+    if: false  # Disabled
     environment:
       name: prod-destroy
     steps:

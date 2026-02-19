@@ -1,2 +1,10 @@
 
-An error occurred (DependencyViolation) when calling the DeleteVpc operation: The vpc 'vpc-08bdc95a6adb2ae27' has dependencies and cannot be deleted.
+usage: aws [options] <command> <subcommand> [<subcommand> ...] [parameters]
+To see help text, you can run:
+
+  aws help
+  aws <command> help
+  aws <command> <subcommand> help
+
+Unknown options: echo, VPC delete attempted, ;
+

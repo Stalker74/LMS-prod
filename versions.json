@@ -1,6 +1,15 @@
-[
-    {
-        "Key": "app/lms-app.tar.gz",
-        "VersionId": "UoooBw9jBqEa_i8nQYNQQ7r56ZRoHYNk"
-    }
-]
+{
+    "DeleteMarkers": [
+        {
+            "Owner": {
+                "ID": "89d1b4bc955ec9d8900d203c6d3614da50e104f4901323dbc6296175519e37ae"
+            },
+            "Key": "app/lms-app.tar.gz",
+            "VersionId": "null",
+            "IsLatest": true,
+            "LastModified": "2026-02-20T01:41:35+00:00"
+        }
+    ],
+    "RequestCharged": null,
+    "Prefix": ""
+}

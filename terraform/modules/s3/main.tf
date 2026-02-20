@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "app_bucket" {
   bucket = "${var.environment}-lms-app-${var.bucket_suffix}"
+  force_destroy = true
 
   tags = {
     Name        = "${var.environment}-lms-app-bucket"
